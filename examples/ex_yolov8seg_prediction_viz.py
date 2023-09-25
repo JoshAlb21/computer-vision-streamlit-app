@@ -25,7 +25,7 @@ segment_color = SegmentColor(predictions[0][0].orig_img, bin_masks[0])
 plot_color_histogram(segment_color.calculate_color_histogram())
 
 # Bin mask
-visualize_bin_mask(bin_masks[2])
+#visualize_bin_mask(bin_masks[2])
 
 # Area ratio
 segment_areas = defaultdict(list) # each cls can have multiple segments

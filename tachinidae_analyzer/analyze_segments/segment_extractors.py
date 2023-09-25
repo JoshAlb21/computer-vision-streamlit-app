@@ -183,25 +183,41 @@ def segment_color_comparison(segment_colors_dict: dict, bins:int=256, ret_as_df:
     # Calculate histograms for each segment
     for label, segment_color_objs in segment_colors_dict.items():
         aggregated_histogram = {
-            'red': [],
-            'green': [],
-            'blue': []
+            'red': {},
+            'green': {},
+            'blue': {}
         }
+        
+        # Initialize stats counters
+        for channel in ['red', 'green', 'blue']:
+            aggregated_histogram[channel] = {
+                "min_val": [],
+                "max_val": [],
+                "std": [],
+                "mean_val": [],
+                "mean_num": [],
+                "max_num": []
+            }
         
         for segment_color_obj in segment_color_objs:
             hist = segment_color_obj.calculate_color_histogram(bins=bins)
+            hist_vals = segment_color_obj.extract_histogram_statistics(hist, ret_as_df=False)
             
             # Aggregate histograms (if there are multiple segments of the same label)
-            #TODO maybe we should aggreate the SegmentColor objects instead of the histograms?
             for channel in ['red', 'green', 'blue']:
-                aggregated_histogram[channel].extend(hist[channel])
+                for stat, value in hist_vals[channel].items():
+                    aggregated_histogram[channel][stat].append(value)
                 
         histograms[label] = aggregated_histogram
 
-    # If required, convert histograms to DataFrame
+    # Final aggregation and conversion to DataFrame
+    flattened_data = {}
+    for segment, channels in histograms.items():
+        for channel, stats in channels.items():
+            for stat, values in stats.items():
+                flattened_data[f"{segment}_{channel}_{stat}"] = np.mean(values)
+
     if ret_as_df:
-        flattened_data = {f"{segment}_{channel}": hist for segment, channels in histograms.items() for channel, hist in channels.items()}
-        histograms = pd.DataFrame(flattened_data)
+        histograms = pd.DataFrame(flattened_data, index=[0])
 
     return histograms
-
