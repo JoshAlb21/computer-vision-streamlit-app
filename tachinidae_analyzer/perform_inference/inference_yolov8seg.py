@@ -2,6 +2,9 @@ import os
 
 from ultralytics import YOLO
 from PIL import Image
+from tqdm import tqdm
+
+import tachinidae_analyzer as ta
 
 
 def get_img_lst_from_dir(dir:str) -> list:
@@ -13,15 +16,18 @@ def get_img_lst_from_dir(dir:str) -> list:
 
 def inference_yolov8seg_on_folder(folder_path:str, model_path:str, limit_img:int=None):
 
+    ta.prepare_data.fix_broken_jpg.detect_and_fix_dir(folder_path)
     images = get_img_lst_from_dir(folder_path)
     model = YOLO(model_path)
 
     #***************
     # Inference
     #***************
-    images = images[:limit_img]
+    if limit_img is not None:
+        images = images[:limit_img]
     predictions = []
-    for image in images:
+    print("Predicting...")
+    for image in tqdm(images):
         prediction = model.predict(image)
         predictions.append(prediction)
 
