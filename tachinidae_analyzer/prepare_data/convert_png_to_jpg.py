@@ -2,6 +2,7 @@ import os
 from PIL import Image
 from tqdm import tqdm
 
+
 def convert_png_to_jpg(directory):
     # Ensure directory ends with a separator
     if not directory.endswith(os.sep):
@@ -12,9 +13,7 @@ def convert_png_to_jpg(directory):
         if file_name.endswith('.png'):
             # Open the image using PIL
             with Image.open(directory + file_name) as image:
-                # Convert RGBA images to RGB before saving as JPG
-                if image.mode == 'RGBA':
-                    image = image.convert('RGB')
+                image = image.convert('RGB')
                 jpg_name = os.path.splitext(file_name)[0] + '.jpg'
                 image.save(directory + jpg_name, 'JPEG')
 
