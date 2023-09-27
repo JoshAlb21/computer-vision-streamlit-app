@@ -30,7 +30,7 @@ def remove_png_files(directory):
 
 if __name__ == '__main__':
     dir_path = input("Enter the directory path containing PNG images: ")
-    #convert_png_to_jpg(dir_path)
-    #print("Conversion complete!")
+    convert_png_to_jpg(dir_path)
+    print("Conversion complete!")
     remove_png_files(dir_path)
     print("PNG files removed!")

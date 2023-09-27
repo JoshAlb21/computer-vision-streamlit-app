@@ -14,7 +14,7 @@ def get_img_lst_from_dir(dir:str) -> list:
             img_lst.append(dir + file_name)
     return img_lst
 
-def inference_yolov8seg_on_folder(folder_path:str, model_path:str, limit_img:int=None):
+def inference_yolov8seg_on_folder(folder_path:str, model_path:str, limit_img:int=None, save_txt:bool=False, save_dir:str=None):
 
     ta.prepare_data.fix_broken_jpg.detect_and_fix_dir(folder_path)
     images = get_img_lst_from_dir(folder_path)
@@ -28,7 +28,10 @@ def inference_yolov8seg_on_folder(folder_path:str, model_path:str, limit_img:int
     predictions = []
     print("Predicting...")
     for image in tqdm(images):
-        prediction = model.predict(image)
+        if save_dir:
+            prediction = model.predict(image, save_txt=save_txt, save_dir=save_dir)
+        else:
+            prediction = model.predict(image, save_txt=save_txt)
         predictions.append(prediction)
 
     print("Predictions")
