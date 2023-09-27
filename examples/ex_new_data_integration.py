@@ -17,6 +17,7 @@ from tqdm import tqdm
 This example shows how to apply YOLOv8seg to extract pseudo labels
 these pseudo labels can be used to train a segmentation model (after supervision)
 
+Besides the txt file also the "names" information is required (can be found in yolov8.Results object)
 
 Label will be saved in runs/segment folder
 '''
@@ -43,3 +44,5 @@ txt_file_path = '/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/runs/s
 
 dir_converter = ta.prepare_data.converter_annotation.DirAnnotationConverter(img_width=4032, img_height=3040)
 dir_converter.txt_to_json_dir(txt_dir=txt_file_path, json_output_dir=json_output_path)
+
+names: {0: 'head', 1: 'abdomen', 2: 'thorax'}

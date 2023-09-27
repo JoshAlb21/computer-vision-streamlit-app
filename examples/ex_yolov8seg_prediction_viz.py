@@ -39,3 +39,4 @@ for cls, mask in zip(predictions[0][0].boxes.cls.tolist(), bin_masks):
 area_ratios = segment_area_comparison(segment_areas)
 area_ratios = area_ratios.iloc[0].to_dict()
 plot_grouped_ratio_barplot_with_labels(area_ratios, list(predictions[0][0].names.values()))
+print(predictions[0][0])
