@@ -1,7 +1,7 @@
 import cv2
 import itertools
 import torch
-from typing import Union
+from typing import Union, List, Dict, Optional, Tuple
 import numpy as np
 
 
@@ -65,6 +65,66 @@ def plot_segments(image, boxes, masks, cls:torch.tensor, labels:dict, conf:Union
 
     cv2.imshow('Segments', image)
     cv2.waitKey(0)
+
+def plot_segments_w_cogs2(image, boxes, masks, cls:torch.tensor, labels:Dict[int, str], cogs:Dict[str, Tuple[float, float]], alpha:0.5):
+    colors = color_generator()
+    cls = cls.numpy()
+    h, w = image.shape[:2]
+
+    # Manually drawing a line for testing
+    line_color = (255, 105, 180)  # Pink in BGR
+    start_point = (100, 100)  # You might need to adjust these coordinates
+    end_point = (200, 200)    # You might need to adjust these coordinates
+    cv2.line(image, start_point, end_point, line_color, 2)
+    
+    cv2.imshow('Segments', image)
+    cv2.waitKey(0)
+
+
+def plot_segments_w_cogs(image, boxes, masks, cls:torch.tensor, labels:Dict[int, str], cogs:Dict[str, Tuple[float, float]], alpha:0.5):
+    colors = color_generator()
+    cls = cls.numpy()
+    h, w = image.shape[:2]
+
+    # Define segment order and corresponding labels
+    segment_order = ['head', 'head_thorax', 'thorax', 'thorax_abdomen', 'abdomen']
+
+    # Define mapping between segment names and cogs dictionary keys
+    segment_mapping = {'head': '0', 'head_thorax': '0_1', 'thorax': '1', 'thorax_abdomen': '1_2', 'abdomen': '2'}
+
+    # Draw and connect CoGs based on segment order
+    prev_cog = None
+    line_color = (255, 105, 180)  # Define color for the lines (pink in BGR format)
+
+    for segment in segment_order:
+        # Use segment_mapping to get the correct key for cogs dictionary
+        cog_key = segment_mapping.get(segment, None)
+        cog = cogs.get(cog_key, None)
+
+        if cog is not None:
+            # Draw CoG with larger dot
+            x, y = int(cog[0]), int(cog[1])
+            cv2.circle(image, (x, y), 40, line_color, -1)
+
+            # Draw line connecting CoGs with pink color and increased thickness
+            if prev_cog is not None:
+                cv2.line(image, (int(prev_cog[0]), int(prev_cog[1])), (x, y), line_color, 10)
+
+            # Update previous CoG for next iteration
+            prev_cog = cog
+
+    # Draw bounding boxes and masks (if necessary)
+    for i, (box, mask_points_normalized) in enumerate(zip(boxes, masks)):
+        label = labels.get(cls[i], "")
+        color = next(colors)
+
+        # Draw bounding box
+        box_label(image, box, label, color)
+        # You may also draw masks here if necessary
+
+    cv2.imshow('Segments', image)
+    cv2.waitKey(0)
+
 
 # Official ultralytics.engine.results.Results.plot() method
 # Show the results

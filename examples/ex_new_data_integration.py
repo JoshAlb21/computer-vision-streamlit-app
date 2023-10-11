@@ -27,12 +27,13 @@ folder_path = "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/img
 model_path = "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/models/YOLOv8_seg/weights/last.pt"
 save_dir = "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/prediction"
 limit_img = 2
+names = {0: 'head', 1: 'abdomen', 2: 'thorax'}
 
 #***************
 # Inference
 #***************
 
-predictions = ta.perform_inference.inference_yolov8seg.inference_yolov8seg_on_folder(folder_path, model_path, limit_img=limit_img, save_txt=True, save_dir=save_dir)
+#predictions = ta.perform_inference.inference_yolov8seg.inference_yolov8seg_on_folder(folder_path, model_path, limit_img=limit_img, save_txt=True, save_dir=save_dir)
 
 #***************
 # Convert to json
@@ -43,6 +44,4 @@ json_output_path = '/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/dat
 txt_file_path = '/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/runs/segment/predict/labels'
 
 dir_converter = ta.prepare_data.converter_annotation.DirAnnotationConverter(img_width=4032, img_height=3040)
-dir_converter.txt_to_json_dir(txt_dir=txt_file_path, json_output_dir=json_output_path)
-
-names: {0: 'head', 1: 'abdomen', 2: 'thorax'}
+dir_converter.txt_to_json_dir(txt_dir=txt_file_path, json_output_dir=json_output_path, names=names)

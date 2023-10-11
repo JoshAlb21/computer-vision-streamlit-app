@@ -5,9 +5,10 @@ from tqdm import tqdm
 
 
 class AnnotationConverter:
-    def __init__(self, img_width: int, img_height: int):
+    def __init__(self, img_width: int, img_height: int, img_format: str = 'png'):
         self.img_width = img_width
         self.img_height = img_height
+        self.img_format = img_format
 
     def txt_to_json(self, txt_file_path: str, json_output_path: str, names: dict):
         """
@@ -16,12 +17,15 @@ class AnnotationConverter:
         with open(txt_file_path, 'r') as file:
             txt_content = file.readlines()
 
+        image_name = os.path.splitext(os.path.basename(txt_file_path))[0] + f".{self.img_format}"
+
         # Convert TXT content to JSON format
         json_content = {
             "version": "4.5.7",
             "flags": {},
             "shapes": [],
-            "imagePath": "",
+            "imagePath": image_name,
+            "imageData": None,
             "imageHeight": self.img_height,
             "imageWidth": self.img_width,
             "lineColor": [0, 255, 0, 128],
