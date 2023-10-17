@@ -82,22 +82,62 @@ for file_name in file_names_wo_ending:
         except:
             pass
     cogs_array = np.array(cogs_list)
-    
+
+    ordered_cogs = ta.plotting.inference_results.order_cog_dict(cogs, max_i=3)
+    print(ordered_cogs)
+
     #***************
     # Compute skeleton
     #***************
 
-    n_polynom = 5
+    n_polynom = 2 #5
     weight = 20
+    num_points = 3000
     cog_weights = np.array([weight]*cogs_array.shape[0])
     # Compute skeleton
-    generator = ta.extract_skeleton.polynom_regression_in_mask.MaskPointGenerator(bin_masks, cogs_array, cog_weights)
+    generator = ta.extract_skeleton.polynom_regression_in_mask.MaskPointGenerator(bin_masks, cogs_array, cog_weights, num_points)
     generator.fit_polynomial(degree=n_polynom)
     combined_mask = generator.get_combined_mask()
     random_points = generator.get_points()
 
+    # save random_points as pickle
+    # save combined_mask as pickle
+    #import pickle
+    #pickle.dump( random_points, open( "random_points2.pickle", "wb" ) )
+    #exit()
+    # old approach ordinary linear regression
+    '''
     # Get (x, y) pairs for all x coordinates in the combined mask
     fitted_points = generator.get_fitted_points()
+    '''
+    #fitted_points = generator.get_fitted_points()
+    # Use ODR instead of OLS
+    fitted_points = generator.fit_get_odr(degree=n_polynom)
+    #fitted_points = generator.interpolate_points(given_points=cogs_array, kind="linear")
+    #fitted_points = generator.parametric_polynomial_regression(degree=n_polynom)
+
+    # New methhod where points must be ordered
+
+    #***************
+    # Method 1
+    #***************
+    orderer = ta.extract_skeleton.point_orderer.PointOrderer(ordered_cogs)
+    ordered_points = orderer.order_points(random_points)
+    ordered_points = np.array(ordered_points)
+    x_values = ordered_points[:, 0]
+    y_values = ordered_points[:, 1]
+    #fitted_points = generator.parametric_regression(x_values, y_values, degree=n_polynom)
+
+    print("extended points:", np.array(orderer.extended_reference_points))
+
+    #***************
+    # Method 2
+    #***************
+    reference_points_extended = np.array(orderer.extended_reference_points)
+    refiner = ta.extract_skeleton.line_refiner.GraphRefiner(reference_points_extended, ordered_points, alpha=1, iterations=500)
+    optimized_points = refiner.get_refined_points()
+    trimmed_points = refiner.trim_by_mask(combined_mask)
+    #fitted_points = trimmed_points
 
     #***************
     # Plot skeleton
@@ -105,7 +145,7 @@ for file_name in file_names_wo_ending:
     drawer = ta.extract_skeleton.plot_skeleton.LineDrawer(fitted_points, combined_mask, bin_mask=True, scatter_points=random_points)
     #drawer = ta.extract_skeleton.plot_skeleton.LineDrawer(fitted_points, img_np, bin_mask=False)
     drawer.draw_line()
-    #drawer.show_image()
-    drawer.save_image(target_plot_dir, file_name + '_skeleton.png')
+    drawer.show_image()
+    #drawer.save_image(target_plot_dir, file_name + '_skeleton.png')
 
     

@@ -3,18 +3,25 @@ import numpy as np
 import os
 
 class LineDrawer:
-    def __init__(self, points: np.ndarray, image: np.ndarray, bin_mask: bool = False, scatter_points: np.ndarray = None):
+    def __init__(self, points: np.ndarray, image: np.ndarray, bin_mask: bool = False, scatter_points: np.ndarray = None, orthogonal_lines: (list, dict) = None):
         self.points = points.astype(int)  # Convert points to integer
         self.scatter_points = scatter_points.astype(int) if scatter_points is not None else None
+        self.orthogonal_lines = orthogonal_lines
         self.bin_mask = bin_mask
         if bin_mask:
             self.image = self._prepare_binary_mask(image)
             self.line_color = (255, 0, 0)  # Blue line for BGR when bin_mask is True
         else:
-            self.image = image.copy()
+            image = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2BGR)
+            self.image = image
             self.line_color = (0, 0, 255)  # Red line for BGR when bin_mask is False
         self.marker_color = (0, 255, 0)  # Green marker color
         self.scatter_color = (255, 0, 0)  # Blue color for scatter points
+        if isinstance(self.orthogonal_lines, dict):
+            predefined_colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]  # Red, Green, Blue in BGR format
+            self.segment_colors = {seg: predefined_colors[i % len(predefined_colors)] for i, seg in enumerate(orthogonal_lines)}
+        else:
+            self.ortho_line_color = (255, 255, 0)  # Default yellow color for orthogonal lines if it's a list
 
     def _prepare_binary_mask(self, mask: np.ndarray):
         """Prepare binary mask for visualization."""
@@ -41,6 +48,23 @@ class LineDrawer:
         if self.scatter_points is not None:
             for pt in self.scatter_points:
                 cv2.circle(self.image, tuple(pt), 5, self.scatter_color, -1)
+    
+    def draw_orthogonal_lines(self):
+        if isinstance(self.orthogonal_lines, list):
+            for line in self.orthogonal_lines:
+                for i in range(1, len(line)):
+                    pt1 = (int(line[i - 1][0]), int(line[i - 1][1]))
+                    pt2 = (int(line[i][0]), int(line[i][1]))
+                    cv2.line(self.image, pt1, pt2, self.ortho_line_color, 2)
+        elif isinstance(self.orthogonal_lines, dict):
+            for seg, lines in self.orthogonal_lines.items():
+                # Convert numpy.int64 values to standard Python int
+                color = tuple(map(int, self.segment_colors[seg]))
+                for line in lines:
+                    for i in range(1, len(line)):
+                        pt1 = (int(line[i - 1][0]), int(line[i - 1][1]))
+                        pt2 = (int(line[i][0]), int(line[i][1]))
+                        cv2.line(self.image, pt1, pt2, color, 2)
 
     def _draw_start_end_markers(self):
         start_point = self.points[0]
@@ -75,6 +99,7 @@ class LineDrawer:
         cv2.line(self.image, (x1, y1), (x2, y2), self.marker_color, 20)
 
     def show_image(self):
+        self.draw_orthogonal_lines()  # Call this method before the other drawings
         self.draw_scatter()  # Call this method before showing the image
         cv2.imshow('Image with Line', self.image)
         cv2.waitKey(0)
