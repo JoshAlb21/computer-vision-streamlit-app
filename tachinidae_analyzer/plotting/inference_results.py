@@ -85,6 +85,7 @@ def plot_segments_w_cogs(image, boxes, masks, cls:torch.tensor, labels:Dict[int,
     colors = color_generator()
     cls = cls.numpy()
     h, w = image.shape[:2]
+    image = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2BGR)
 
     # Define segment order and corresponding labels
     segment_order = ['head', 'head_thorax', 'thorax', 'thorax_abdomen', 'abdomen']
@@ -125,6 +126,23 @@ def plot_segments_w_cogs(image, boxes, masks, cls:torch.tensor, labels:Dict[int,
     cv2.imshow('Segments', image)
     cv2.waitKey(0)
 
+def order_cog_dict(cogs:dict, max_i:int) -> list:
+    # Order cogs by '0', '0_1', '1', ..., '2'
+    cog_line = []
+    max_i = 3
+    for i in range(max_i):
+        try:
+            cog_line.append(cogs[f'{i}'])
+        except KeyError:
+            pass
+        if i < max_i - 1:
+            try:
+                cog_line.append(cogs[f'{i}_{i+1}'])
+            except KeyError:
+                pass
+
+    return cog_line
+
 
 # Official ultralytics.engine.results.Results.plot() method
 # Show the results
@@ -156,3 +174,17 @@ def plot_segments_from_results(result):
 
     # Visualize bounding boxes and segmentations
     plot_segments(image, boxes, masks, cls, labels, conf, score)
+
+def plot_binary_mask(mask):
+    """
+    Plot a binary mask using matplotlib.
+
+    Parameters:
+    - mask (np.ndarray): A 2D numpy array with binary values.
+    """
+    plt.imshow(mask, cmap='gray')
+    plt.colorbar(label='Pixel Value')
+    plt.title('Binary Mask Visualization')
+    plt.xlabel('X-axis (Pixels)')
+    plt.ylabel('Y-axis (Pixels)')
+    plt.show()
