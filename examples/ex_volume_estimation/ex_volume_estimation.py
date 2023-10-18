@@ -18,20 +18,6 @@ def method2_connect_cog(ordered_cogs, random_points, combined_mask, alpha=1, ite
 
     return fitted_points
 
-def plot_binary_mask(mask):
-    """
-    Plot a binary mask using matplotlib.
-
-    Parameters:
-    - mask (np.ndarray): A 2D numpy array with binary values.
-    """
-    plt.imshow(mask, cmap='gray')
-    plt.colorbar(label='Pixel Value')
-    plt.title('Binary Mask Visualization')
-    plt.xlabel('X-axis (Pixels)')
-    plt.ylabel('Y-axis (Pixels)')
-    plt.show()
-
 
 if __name__ == "__main__":
 
@@ -166,7 +152,7 @@ if __name__ == "__main__":
         #***************
         # Compute volume
         #***************
-        k_mm_per_px = 1
+        k_mm_per_px = 0.003118
         h_value = generator.get_h_mean()
         estimator = ta.length_estimation.volume_estimation.VolumeEstimator(lines, h_value, k_conv_factor=k_mm_per_px)
         total_estimated_volume, body_part_volumes = estimator.calculate_volume_in_mm_3(round_to=1)
