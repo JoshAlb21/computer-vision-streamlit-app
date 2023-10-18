@@ -4,87 +4,26 @@ from PIL import Image
 import numpy as np
 import torch
 import os
-
 import matplotlib.pyplot as plt
-
-
-def method2_connect_cog(ordered_cogs, random_points, combined_mask, alpha=1, iterations=500, n_samples=100):
-    orderer = ta.extract_skeleton.point_orderer.PointOrderer(ordered_cogs)
-    reference_points_extended = np.array(orderer.extended_reference_points)
-    refiner = ta.extract_skeleton.line_refiner.GraphRefiner(reference_points_extended, random_points, alpha=alpha, iterations=iterations)
-    optimized_points = refiner.get_refined_points()
-    control_points = refiner.trim_by_mask(combined_mask)
-    fitted_points = refiner.sample_points_from_segments(control_points, n=n_samples)
-
-    return fitted_points
 
 
 if __name__ == "__main__":
 
-    json_path = '/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/prediction/ver2'
-    image_path = '/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/img/ver2'
+    # Load config.
+    file_path = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    config_path = os.path.join(file_path, "volume_extraction_config.json")
+    config = ta.utils.load_config.load_config(config_path)
 
-    target_plot_dir = '/Users/joshuaalbiez/Documents/masterthesis_iai/generated_plots/skeleton_extraction'
-
-
-    all_json_files = os.listdir(json_path)
-    all_img_files = os.listdir(image_path)
+    all_json_files = os.listdir(config["paths"]["json_path"])
+    all_img_files = os.listdir(config["paths"]["image_path"])
     file_names_wo_ending = [file_name.split('.')[0] for file_name in all_json_files]
 
-    reduce_to = 10
-    file_names_wo_ending = file_names_wo_ending[:reduce_to]
+    file_names_wo_ending = file_names_wo_ending[:config["general"]["reduce_to"]]
 
     for file_name in file_names_wo_ending:
-        json_file_path = os.path.join(json_path, file_name + '.json')
-        img_file_path = os.path.join(image_path, file_name + '.jpg')
 
-        #***************
-        # Load JSON
-        #***************
-
-        # Load JSON file
-        with open(json_file_path) as f:
-            annotation_data1 = json.load(f)
-
-        #***************
-        # Load image
-        #***************
-
-        # load image np.ndarray
-        img = Image.open(img_file_path)
-        img_np = np.array(img)  # Convert PIL Image to numpy array
-
-        boxes = []
-        masks = []
-        scores = []
-        all_cls = []
-
-        labels = {0: 'head', 1: 'thorax', 2: 'abdomen'}
-
-        mask_w_label = {'head': [], 'thorax': [], 'abdomen': []}
-
-        for shape in annotation_data1['shapes']:
-            
-            # Extract bounding box from shape
-            x_coords = [point[0] for point in shape['points']]
-            y_coords = [point[1] for point in shape['points']]
-            x1 = min(x_coords)
-            y1 = min(y_coords)
-            x2 = max(x_coords)
-            y2 = max(y_coords)
-            boxes.append([x1, y1, x2, y2])  # Now the box is in the [x1, y1, x2, y2] format
-
-
-            mask = [[point[0] / img.width, point[1] / img.height] for point in shape['points']]
-            masks.append(mask)
-            mask_w_label[shape['label']].append(mask)
-            scores.append(1)
-            i_cls = list(labels.keys())[list(labels.values()).index(shape['label'])]
-            all_cls.append(i_cls)
-
-        masks = [np.array(mask) for mask in masks]
-        mask_w_label = {key: [np.array(mask) for mask in masks] for key, masks in mask_w_label.items()}
-        all_cls = torch.Tensor(all_cls)
+        loader = ta.utils.load_json_annotation.AnnotationLoader(file_name, config["paths"]["json_path"], config["paths"]["image_path"])
+        img_np, img, boxes, masks, scores, all_cls, mask_w_label, labels = loader.load()
 
         bin_masks = ta.analyze_segments.xyn_to_bin_mask.xyn_to_bin_mask(masks, img.width, img.height, img_np)
         for key, masks in mask_w_label.items():
@@ -126,15 +65,15 @@ if __name__ == "__main__":
         #fitted_points = generator.fit_get_odr(degree=n_polynom)
 
         # Use method 2
-        alpha = 1
-        iterations = 500
-        n_samples = 100
-        fitted_points = method2_connect_cog(ordered_cogs, random_points, combined_mask, alpha=alpha, iterations=iterations, n_samples=n_samples)
+        alpha = config["skeleton_extraction_w_cog"]["alpha"]
+        iterations = config["skeleton_extraction_w_cog"]["iterations"]
+        n_samples = config["skeleton_extraction_w_cog"]["n_samples"]
+        fitted_points = ta.extract_skeleton.extract_skeleton_w_cogs.method2_connect_cog(ordered_cogs, random_points, combined_mask, alpha=alpha, iterations=iterations, n_samples=n_samples)
         
         #***************
         # Calculate orthogonal lines
         #***************
-        num_lines = 50
+        num_lines = config["volume_settings"]["num_orthogonal_lines"] 
         generator = ta.extract_skeleton.orthogonal_slicer.OrthogonalLinesGenerator(fitted_points, combined_mask, separate_masks=mask_w_label)
         generator.generate_orthogonal_lines(num_lines=num_lines)
         # Remove intersecting lines
@@ -152,7 +91,7 @@ if __name__ == "__main__":
         #***************
         # Compute volume
         #***************
-        k_mm_per_px = 0.003118
+        k_mm_per_px = config["volume_settings"]["k_mm_per_px"] 
         h_value = generator.get_h_mean()
         estimator = ta.length_estimation.volume_estimation.VolumeEstimator(lines, h_value, k_conv_factor=k_mm_per_px)
         total_estimated_volume, body_part_volumes = estimator.calculate_volume_in_mm_3(round_to=1)

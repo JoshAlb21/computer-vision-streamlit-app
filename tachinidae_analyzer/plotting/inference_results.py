@@ -3,6 +3,8 @@ import itertools
 import torch
 from typing import Union, List, Dict, Optional, Tuple
 import numpy as np
+from PIL import Image
+import matplotlib.pyplot as plt
 
 
 def box_label(image, box, label='', color=(128, 128, 128), txt_color=(255, 255, 255)):

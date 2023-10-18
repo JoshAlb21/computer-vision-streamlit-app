@@ -1,0 +1,19 @@
+{
+    "paths": {
+        "json_path": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/prediction/ver2",
+        "image_path": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/img/ver2",
+        "target_plot_dir": "/Users/joshuaalbiez/Documents/masterthesis_iai/generated_plots/skeleton_extraction"
+    },
+    "general": {
+        "reduce_to": 10
+    },
+    "skeleton_extraction_w_cog": {
+        "alpha": 1,
+        "iterations": 500,
+        "n_samples":  100
+    },
+    "volume_settings": {
+        "num_orthogonal_lines": 50,
+        "k_mm_per_px": 0.003118
+    }
+}
