@@ -1,11 +1,15 @@
 {
     "paths": {
-        "json_path": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/prediction/ver2",
-        "image_path": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/img/ver2",
-        "target_plot_dir": "/Users/joshuaalbiez/Documents/masterthesis_iai/generated_plots/skeleton_extraction"
+        "json_path": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/prediction",
+        "image_path": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/img",
+        "target_plot_dir": "/Users/joshuaalbiez/Documents/masterthesis_iai/generated_plots/skeleton_extraction",
+        "target_df_dir": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/extract_csv",
+        "target_df_name": "df_volumes_ver1.csv"
     },
     "general": {
-        "reduce_to": 10
+        "versions": ["ver1"],
+        "reduce_to": 0,
+        "show_plots": false
     },
     "skeleton_extraction_w_cog": {
         "alpha": 1,
