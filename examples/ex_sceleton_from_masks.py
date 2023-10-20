@@ -112,8 +112,9 @@ for file_name in file_names_wo_ending:
     '''
     #fitted_points = generator.get_fitted_points()
     # Use ODR instead of OLS
-    fitted_points = generator.fit_get_odr(degree=n_polynom)
-    #fitted_points = generator.interpolate_points(given_points=cogs_array, kind="linear")
+    #fitted_points = generator.fit_get_odr(degree=n_polynom)
+    #fitted_points = generator.interpolate_points(given_points=cogs_array, kind="quadratic")
+    #fitted_points = generator.interpolate_points_spline(given_points=cogs_array)
     #fitted_points = generator.parametric_polynomial_regression(degree=n_polynom)
 
     # New methhod where points must be ordered
@@ -140,9 +141,15 @@ for file_name in file_names_wo_ending:
     #fitted_points = trimmed_points
 
     #***************
+    # Method 3
+    #***************
+    #fitted_points = generator.interpolate_points_parametric_spline(given_points=cogs_array[:1])
+    #fitted_points = ta.extract_skeleton.line_refiner.trim_line(combined_mask, fitted_points)
+
+    #***************
     # Plot skeleton
     #***************
-    drawer = ta.extract_skeleton.plot_skeleton.LineDrawer(fitted_points, combined_mask, bin_mask=True, scatter_points=random_points)
+    drawer = ta.extract_skeleton.plot_skeleton.LineDrawer(fitted_points, combined_mask, bin_mask=True, scatter_points=None)#random_points)
     #drawer = ta.extract_skeleton.plot_skeleton.LineDrawer(fitted_points, img_np, bin_mask=False)
     drawer.draw_line()
     drawer.show_image()

@@ -1,0 +1,13 @@
+{
+    "paths": {
+        "folder_path": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/img/ver1/",
+        "model_path": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/models/YOLOv8_seg/weights/last.pt",
+        "save_dir": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/prediction/ver1"
+    },
+    "general": {
+        "limit_img": null
+    }
+}
+
+
+

@@ -18,6 +18,8 @@ if __name__ == "__main__":
     config_path = os.path.join(file_path, "volume_extraction_config.json")
     config = ta.utils.load_config.load_config(config_path)
 
+    all_rows = []
+
     for version in config["general"]["versions"]:
         print(f"Extracting from version {version} dataset...")
         json_path = os.path.join(config["paths"]["json_path"], version)
@@ -29,7 +31,6 @@ if __name__ == "__main__":
 
         if config["general"]["reduce_to"]:
             file_names_wo_ending = file_names_wo_ending[:config["general"]["reduce_to"]]
-        all_rows = []
 
         for file_name in tqdm(file_names_wo_ending):
 
@@ -76,6 +77,7 @@ if __name__ == "__main__":
             #fitted_points = generator.fit_get_odr(degree=n_polynom)
 
             # Use method 2
+            '''
             alpha = config["skeleton_extraction_w_cog"]["alpha"]
             iterations = config["skeleton_extraction_w_cog"]["iterations"]
             n_samples = config["skeleton_extraction_w_cog"]["n_samples"]
@@ -83,6 +85,15 @@ if __name__ == "__main__":
             if fitted_points is None:
                 print("Could not fit points with method 2. Fall back to regression...")
                 fitted_points = generator.fit_get_odr(degree=n_polynom)
+            '''
+
+            # Method 3
+            try:
+                fitted_points = generator.interpolate_points_parametric_spline(given_points=cogs_array)
+            except ValueError:
+                print("Could not fit points with method 3 (Less than 2 CoGs). Fall back to regression...")
+                fitted_points = generator.fit_get_odr(degree=n_polynom)
+            fitted_points = ta.extract_skeleton.line_refiner.trim_line(combined_mask, fitted_points)
 
             #***************
             # Calculate orthogonal lines
@@ -109,7 +120,7 @@ if __name__ == "__main__":
             k_mm_per_px = config["volume_settings"]["k_mm_per_px"] 
             h_value = generator.get_h_mean()
             estimator = ta.length_estimation.volume_estimation.VolumeEstimator(lines, h_value, k_conv_factor=k_mm_per_px)
-            total_estimated_volume, body_part_volumes = estimator.calculate_volume_in_mm_3(round_to=1)
+            total_estimated_volume, body_part_volumes = estimator.calculate_volume_in_mm_3(round_to=3)
             print(f"total Estimated Volume: {total_estimated_volume} mm^3")
             print(f"body part volumes: {body_part_volumes} mm^3")
             volumes = {"total_volume": total_estimated_volume, **body_part_volumes}
@@ -119,8 +130,8 @@ if __name__ == "__main__":
             # Compute length
             #***************
             estimator = ta.length_estimation.length_estimation.LengthEstimator(fitted_points, mask_w_label, k_mm_per_px)
-            length_per_segment = estimator.calculate_lengths(round_to=1)
-            total_length = estimator.calculate_total_length(round_to=1)
+            length_per_segment = estimator.calculate_lengths(round_to=3)
+            total_length = estimator.calculate_total_length(round_to=3)
             print(f"total length: {total_length} mm")
             print(f"lengths: {length_per_segment} mm")
             lengths = {"total_length": total_length, **length_per_segment}

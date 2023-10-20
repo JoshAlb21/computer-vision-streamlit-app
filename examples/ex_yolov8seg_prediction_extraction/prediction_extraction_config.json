@@ -1,0 +1,11 @@
+{
+    "paths": {
+        "folder_path": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/img/ver2/",
+        "model_path": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/models/YOLOv8_seg/weights/last.pt",
+        "save_dir_extract_data": "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/extract_csv",
+        "extract_csv_name": "df_segments.csv"
+    },
+    "general": {
+        "limit_img": null
+    }
+}
