@@ -41,7 +41,7 @@ class LengthEstimator:
         """
         body_part_lengths = {}
         for body_part, mask in self.masks.items():
-            body_part_lengths[body_part] = round(self._calculate_length(mask) * self.k_conv_factor, round_to)
+            body_part_lengths[f'length_{body_part}'] = round(self._calculate_length(mask) * self.k_conv_factor, round_to)
         return body_part_lengths
 
     def calculate_total_length(self, round_to: int=1):
