@@ -54,33 +54,8 @@ class GraphRefiner:
         """Modify the start and end points of the line to lie within the boundaries defined by the binary mask."""
         refined_points = self.get_refined_points()
         
-        # Create a grid of x and y coordinates for mask
-        x_grid, y_grid = np.meshgrid(np.arange(binary_mask.shape[1]), np.arange(binary_mask.shape[0]))
-        
-        # Function to check if a point lies within the mask boundaries
-        def point_in_mask(x, y):
-            if 0 <= int(y) < binary_mask.shape[0] and 0 <= int(x) < binary_mask.shape[1]:
-                return binary_mask[int(y), int(x)]
-            return False
-        
-        # Trim start segment
-        for i in range(len(refined_points)-1):
-            x_values = np.linspace(refined_points[i][0], refined_points[i+1][0], 100)
-            y_values = np.linspace(refined_points[i][1], refined_points[i+1][1], 100)
-            for x, y in zip(x_values, y_values):
-                if point_in_mask(x, y):
-                    refined_points[i] = (x, y)
-                    break
-        
-        # Trim end segment
-        for i in range(len(refined_points)-1, 0, -1):
-            x_values = np.linspace(refined_points[i][0], refined_points[i-1][0], 100)
-            y_values = np.linspace(refined_points[i][1], refined_points[i-1][1], 100)
-            for x, y in zip(x_values, y_values):
-                if point_in_mask(x, y):
-                    refined_points[i] = (x, y)
-                    break
-        
+        refined_points = trim_line(binary_mask, refined_points)
+
         self.refined_points = refined_points
 
         return refined_points
@@ -129,3 +104,33 @@ class GraphRefiner:
         sampled_points = np.array(sampled_points)
 
         return sampled_points
+
+def trim_line(binary_mask: np.ndarray, refined_points: list):
+    # Create a grid of x and y coordinates for mask
+    x_grid, y_grid = np.meshgrid(np.arange(binary_mask.shape[1]), np.arange(binary_mask.shape[0]))
+    
+    # Function to check if a point lies within the mask boundaries
+    def point_in_mask(x, y):
+        if 0 <= int(y) < binary_mask.shape[0] and 0 <= int(x) < binary_mask.shape[1]:
+            return binary_mask[int(y), int(x)]
+        return False
+    
+    # Trim start segment
+    for i in range(len(refined_points)-1):
+        x_values = np.linspace(refined_points[i][0], refined_points[i+1][0], 100)
+        y_values = np.linspace(refined_points[i][1], refined_points[i+1][1], 100)
+        for x, y in zip(x_values, y_values):
+            if point_in_mask(x, y):
+                refined_points[i] = (x, y)
+                break
+    
+    # Trim end segment
+    for i in range(len(refined_points)-1, 0, -1):
+        x_values = np.linspace(refined_points[i][0], refined_points[i-1][0], 100)
+        y_values = np.linspace(refined_points[i][1], refined_points[i-1][1], 100)
+        for x, y in zip(x_values, y_values):
+            if point_in_mask(x, y):
+                refined_points[i] = (x, y)
+                break
+    
+    return refined_points
