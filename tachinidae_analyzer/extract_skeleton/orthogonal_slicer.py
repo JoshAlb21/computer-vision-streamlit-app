@@ -18,7 +18,10 @@ class OrthogonalLinesGenerator:
         """Generate orthogonal lines to the middle line."""
 
         if len(self.middle_line_points) < num_lines:
-            raise ValueError("Number of orthogonal lines cannot be greater than the number of points in the middle line.")
+            #raise ValueError(f"Number of orthogonal lines ({num_lines}) cannot be greater than the number of points in the middle line ({self.middle_line_points.shape}).")
+            print(f"Number of orthogonal lines ({num_lines}) cannot be greater than the number of points in the middle line ({self.middle_line_points.shape}).")
+            print("Automatically set number of orthogonal lines to the number of points in the middle line.")
+            num_lines = len(self.middle_line_points)
 
         # Sample points from the middle line
         sampled_points = np.linspace(0, len(self.middle_line_points) - 1, num_lines, dtype=int)
