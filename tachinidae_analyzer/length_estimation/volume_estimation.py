@@ -73,7 +73,7 @@ class VolumeEstimator:
         Units: mm^3
         """
         total_volume = 0
-        body_part_volumes = {bp: 0 for bp in self.orthogonal_lines_dict.keys()}
+        body_part_volumes = {f'volume_{bp}': 0 for bp in self.orthogonal_lines_dict.keys()}
 
         for body_part, lines in self.orthogonal_lines_dict.items():
             for i in range(1, len(lines)):
@@ -90,10 +90,10 @@ class VolumeEstimator:
 
                 slice_volume = self.k_conv_factor**3 * self._calculate_frustum_volume(A1, A2)
                 
-                body_part_volumes[body_part] += slice_volume
+                body_part_volumes[f"volume_{body_part}"] += slice_volume
 
-            body_part_volumes[body_part] = round(body_part_volumes[body_part], round_to)
-            total_volume += body_part_volumes[body_part]
+            body_part_volumes[f"volume_{body_part}"] = round(body_part_volumes[f"volume_{body_part}"], round_to)
+            total_volume += body_part_volumes[f"volume_{body_part}"]
 
         total_volume = round(total_volume, round_to)
         return total_volume, body_part_volumes

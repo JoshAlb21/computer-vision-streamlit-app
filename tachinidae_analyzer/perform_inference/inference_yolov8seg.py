@@ -27,7 +27,7 @@ def inference_yolov8seg_on_folder(folder_path:str, model_path:str, limit_img:int
         images = images[:limit_img]
     predictions = []
     print("Predicting...")
-    for image in tqdm(images):
+    for image in images: #tqdm(images):
         if save_dir:
             prediction = model.predict(image, save_txt=save_txt, save_dir=save_dir)
         else:
