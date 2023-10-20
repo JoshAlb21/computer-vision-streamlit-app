@@ -8,6 +8,8 @@ class PointOrderer:
     The order is crucial for the correct computation of the skeleton. (at least for some methods)
     '''
     def __init__(self, reference_points):
+        if len(reference_points) < 2:
+            raise ValueError(f"Reference line must have at least two points, but got {len(reference_points)} point(s).")
         self.reference_points = reference_points
         self.extended_reference_points = []
         self.extend_reference_line()
@@ -53,7 +55,7 @@ class PointOrderer:
                 distance = np.linalg.norm(np.array(point) - projection)
                 if distance < min_distance:
                     min_distance = distance
-                    order_value = i + t  # Updated this to just t for better ordering
+                    order_value = i + t
             return order_value
 
         ordered_points = sorted(unordered_points, key=custom_sort)
