@@ -3,7 +3,8 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 import cv2
 from scipy.odr import ODR, Model, Data
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, CubicSpline
+import scipy.interpolate
 
 
 class MaskPointGenerator:
@@ -186,7 +187,118 @@ class MaskPointGenerator:
         y_new = f(x_new)
 
         return np.column_stack((x_new, y_new))
-    
+
+    def interpolate_points_spline(self, given_points=None):
+        """
+        Perform spline interpolation on the provided points (or self-given points if not provided).
+
+        Args:
+            given_points (np.ndarray, optional): Points to interpolate. If None, uses self-given points.
+
+        Returns:
+            np.ndarray: Interpolated points using spline interpolation.
+        """
+
+        # Use the provided points or the self-given points
+        if given_points is None:
+            if self.points is not None:
+                given_points = self.points
+            else:
+                raise ValueError("No points provided for interpolation and no given points in the class instance.")
+
+        # Prevent: ValueError: Expect x to not have duplicates
+        # Sort the points based on x values
+        sorted_indices = np.argsort(given_points[:, 0])
+        sorted_points = given_points[sorted_indices]
+
+        # For each unique x value, average the y values
+        unique_x, unique_indices = np.unique(sorted_points[:, 0], return_index=True)
+        y_values = [np.mean(sorted_points[sorted_points[:, 0] == x_val, 1]) for x_val in unique_x]
+
+        # Create the spline interpolation function
+        cs = CubicSpline(unique_x, y_values)
+
+        # Interpolate for the x values
+        x_new = np.linspace(unique_x.min(), unique_x.max(), len(unique_x) * 10)  # Create finer x values for interpolation
+        y_new = cs(x_new)
+
+        return np.column_stack((x_new, y_new))
+
+    def interpolate_points_parametric_spline(self, given_points=None):
+        """
+        Perform parametric spline interpolation on the provided points 
+        (or self-given points if not provided).
+
+        Args:
+            given_points (np.ndarray, optional): Points to interpolate. If None, uses self-given points.
+
+        Returns:
+            np.ndarray: Interpolated points using parametric spline interpolation.
+        """
+
+        # Use the provided points or the self-given points
+        if given_points is None:
+            if self.points is not None:
+                given_points = self.points
+            else:
+                raise ValueError("No points provided for interpolation and no given points in the class instance.")
+
+        # Extract x and y values
+        path_x = given_points[:, 0]
+        path_y = given_points[:, 1]
+
+        # Define an arbitrary parameter to parameterize the curve
+        path_t = np.linspace(0, 1, path_x.size)
+
+        # Create the parametric spline interpolation objects for x and y separately
+        spline_x = scipy.interpolate.CubicSpline(path_t, path_x, bc_type='natural')
+        spline_y = scipy.interpolate.CubicSpline(path_t, path_y, bc_type='natural')
+
+        # Define values of the arbitrary parameter over which to interpolate
+        t = np.linspace(np.min(path_t), np.max(path_t), 100)
+
+        # Interpolate along t
+        x_interp = spline_x(t)
+        y_interp = spline_y(t)
+
+        #return np.column_stack((x_interp, y_interp))
+
+        # Compute the tangent at t=0 and t=1
+        tangent_start = np.array([spline_x.derivative()(path_t[0]), spline_y.derivative()(path_t[0])])
+        tangent_end = np.array([spline_x.derivative()(path_t[-1]), spline_y.derivative()(path_t[-1])])
+
+        # Clip the extrapolated points to the boundaries
+        start_extension = self._extend_line_from_point(given_points[0], -tangent_start)  # Note the negative sign
+        end_extension = self._extend_line_from_point(given_points[-1], tangent_end)
+
+        # Concatenate the extension points to the interpolated curve
+        extended_curve = np.vstack(([start_extension], np.column_stack((x_interp, y_interp)), [end_extension]))
+
+        return extended_curve
+
+    def _extend_line_from_point(self, point, direction, x_min=0, y_min=0, x_max=4032, y_max=3040):
+        """Extend a line from a given point in a specified direction until it reaches an image boundary."""
+        m = direction[1] / direction[0] if direction[0] != 0 else float('inf')
+        
+        if m == float('inf'):  # vertical line
+            return (point[0], y_max if direction[1] > 0 else y_min)
+        
+        # Find the intersection points with each boundary
+        y_at_x_min = m * (x_min - point[0]) + point[1]
+        y_at_x_max = m * (x_max - point[0]) + point[1]
+        x_at_y_min = point[0] + (y_min - point[1]) / m
+        x_at_y_max = point[0] + (y_max - point[1]) / m
+
+        # Check which boundary the line intersects first
+        if y_at_x_min >= y_min and y_at_x_min <= y_max and direction[0] < 0:
+            return (x_min, y_at_x_min)
+        elif y_at_x_max >= y_min and y_at_x_max <= y_max and direction[0] > 0:
+            return (x_max, y_at_x_max)
+        elif x_at_y_min >= x_min and x_at_y_min <= x_max and direction[1] < 0:
+            return (x_at_y_min, y_min)
+        else:
+            return (x_at_y_max, y_max)
+
     def parametric_polynomial_regression(self, degree=2, extend_range=0.1):
         """
         Perform a parametric polynomial regression of given degree on the points.
