@@ -3,6 +3,62 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+def plot_single_segmented_ratio_barplot(ratios: dict, labels: list[str], return_image:bool=False):
+    '''
+    Plot a single bar plot where the bar is segmented into different parts.
+    Each segment in the bar represents the ratio of a body part, with the ratio
+    written within each corresponding part.
+    
+    Parameters:
+        ratios: dict
+            A dictionary of the ratios of the areas of the segments.
+            The keys are formatted as "{segment}_total".
+            The values are formatted as float.
+        labels: list
+            A list of the segment names (e.g., ['head', 'abdomen', 'thorax']).
+    '''
+
+    # Initialize data for each segment
+    segment_ratios = []
+
+    # Collecting ratios for each body part
+    for label in labels:
+        total_key = f'{label}_total'
+        if total_key in ratios:
+            segment_ratios.append(ratios[total_key])
+
+    # Plotting
+    plt.figure(figsize=(6, 6))
+    bar_width = 0.35
+
+    # Colors for each segment
+    colors = ['red', 'green', 'blue']  # Adjust colors as needed
+
+    # Stacking each segment in the bar
+    bottom_height = 0
+    for i, ratio in enumerate(segment_ratios):
+        plt.bar(0, ratio, bar_width, bottom=bottom_height, color=colors[i], label=labels[i])
+        # Write the ratio inside each segment
+        plt.text(0, bottom_height + ratio / 2, f'{ratio:.2f}', ha='center', va='center', color='white', fontweight='bold', fontsize=12)
+        bottom_height += ratio
+
+    # Adding labels
+    plt.ylabel('Ratio Value')
+    plt.title('Segmented Area Ratios of Body Parts')
+    plt.xticks([], [])  # No x-ticks needed as there's only one bar
+    plt.legend(loc='upper right')
+    plt.tight_layout()
+
+    if return_image:
+        return plt.gcf()
+    else:
+        plt.show()
+
+
 def plot_grouped_ratio_barplot_with_labels(ratios:dict, labels:list[str]):
     '''
     Plot a grouped bar plot with the ratios of the areas of the segments.

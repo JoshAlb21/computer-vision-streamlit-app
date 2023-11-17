@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-def plot_color_histogram(hist_data):
+def plot_color_histogram(hist_data, return_image=False):
     """
     Plot the color histograms for the RGB channels.
 
@@ -24,4 +24,7 @@ def plot_color_histogram(hist_data):
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
     
-    plt.show()
+    if return_image:
+        return plt.gcf()
+    else:
+        plt.show()

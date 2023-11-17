@@ -34,10 +34,11 @@ def color_generator():
     base_colors = [(255, 0, 0), (0, 0, 255), (0, 255, 0), (0, 255, 255), (255, 165, 0), (128, 0, 128), (165, 42, 42), (255, 192, 203)]
     return itertools.cycle(base_colors)
 
-def plot_segments(image, boxes, masks, cls:torch.tensor, labels:dict, conf:Union[torch.tensor, np.ndarray], score:bool=False, alpha=0.5):
+def plot_segments(image, boxes, masks, cls:torch.tensor, labels:dict, conf:Union[torch.tensor, np.ndarray], score:bool=False, alpha=0.5, return_image:bool=False):
     colors = color_generator()
     cls = cls.numpy()
     h, w = image.shape[:2]
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     for i, (box, mask_points_normalized) in enumerate(zip(boxes, masks)):
         if score:
@@ -65,8 +66,11 @@ def plot_segments(image, boxes, masks, cls:torch.tensor, labels:dict, conf:Union
             overlay[..., c] = np.where(mask == 1, color[c], overlay[..., c])
         cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0, image)
 
-    cv2.imshow('Segments', image)
-    cv2.waitKey(0)
+    if return_image:
+        return image
+    else:
+        cv2.imshow('Segments', image)
+        cv2.waitKey(0)
 
 def plot_segments_w_cogs2(image, boxes, masks, cls:torch.tensor, labels:Dict[int, str], cogs:Dict[str, Tuple[float, float]], alpha:0.5):
     colors = color_generator()
@@ -158,7 +162,7 @@ for r in predictions[0]:
 '''
 
 
-def plot_segments_from_results(result):
+def plot_segments_from_results(result, return_image:bool=False):
     """
     Plot bounding boxes and segmentation masks using a ultralytics.engine.results.Results object.
 
@@ -175,7 +179,13 @@ def plot_segments_from_results(result):
     score = True if conf is not None else False
 
     # Visualize bounding boxes and segmentations
-    plot_segments(image, boxes, masks, cls, labels, conf, score)
+    if return_image:
+        image = plot_segments(image, boxes, masks, cls, labels, conf, score, return_image=return_image)
+        print("Image type check inside inference_results.py")
+        print(type(image))
+        return image
+    else:
+        plot_segments(image, boxes, masks, cls, labels, conf, score, return_image=return_image)
 
 def plot_binary_mask(mask):
     """
