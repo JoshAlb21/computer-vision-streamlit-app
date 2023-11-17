@@ -60,50 +60,51 @@ class GraphRefiner:
 
         return refined_points
 
-    def sample_points_from_segments(self, middle_line_points, n) -> np.ndarray:
-        '''
-        Samples n points from the middle line segments.
-        Other functions require the middle line, to be desribed by a list of points.
-        '''
 
-        # Calculate the total length of the piecewise linear connection
-        total_length = 0
-        for i in range(len(middle_line_points) - 1):
-            total_length += np.linalg.norm(np.array(middle_line_points[i+1]) - np.array(middle_line_points[i]))
+def sample_points_from_segments(middle_line_points, n) -> np.ndarray:
+    '''
+    Samples n points from the middle line segments.
+    Other functions require the middle line, to be desribed by a list of points.
+    '''
 
-        # Distance between each sampled point
-        distance_between_samples = total_length / (n-1)  # n-1 intervals for n points
+    # Calculate the total length of the piecewise linear connection
+    total_length = 0
+    for i in range(len(middle_line_points) - 1):
+        total_length += np.linalg.norm(np.array(middle_line_points[i+1]) - np.array(middle_line_points[i]))
 
-        sampled_points = [middle_line_points[0]]  # starting with the first point
-        remaining_distance = distance_between_samples
+    # Distance between each sampled point
+    distance_between_samples = total_length / (n-1)  # n-1 intervals for n points
 
-        for i in range(len(middle_line_points) - 1):
-            p1 = np.array(middle_line_points[i])
-            p2 = np.array(middle_line_points[i+1])
-            segment_length = np.linalg.norm(p2 - p1)
+    sampled_points = [middle_line_points[0]]  # starting with the first point
+    remaining_distance = distance_between_samples
 
-            while segment_length >= remaining_distance:
-                # Calculate the next sampled point on the current segment
-                t = remaining_distance / segment_length
-                next_point = (1 - t) * p1 + t * p2
-                sampled_points.append(tuple(next_point))
-                
-                # Move to the next sampling position
-                segment_length -= remaining_distance
-                remaining_distance = distance_between_samples
-                p1 = next_point
+    for i in range(len(middle_line_points) - 1):
+        p1 = np.array(middle_line_points[i])
+        p2 = np.array(middle_line_points[i+1])
+        segment_length = np.linalg.norm(p2 - p1)
 
-            # If we haven't reached the end of the segment, set the remaining distance for the next segment
-            if segment_length > 0:
-                remaining_distance -= segment_length
+        while segment_length >= remaining_distance:
+            # Calculate the next sampled point on the current segment
+            t = remaining_distance / segment_length
+            next_point = (1 - t) * p1 + t * p2
+            sampled_points.append(tuple(next_point))
+            
+            # Move to the next sampling position
+            segment_length -= remaining_distance
+            remaining_distance = distance_between_samples
+            p1 = next_point
 
-        # Ensure the last point is included
-        if len(sampled_points) < n:
-            sampled_points.append(middle_line_points[-1])
+        # If we haven't reached the end of the segment, set the remaining distance for the next segment
+        if segment_length > 0:
+            remaining_distance -= segment_length
 
-        sampled_points = np.array(sampled_points)
+    # Ensure the last point is included
+    if len(sampled_points) < n:
+        sampled_points.append(middle_line_points[-1])
 
-        return sampled_points
+    sampled_points = np.array(sampled_points)
+
+    return sampled_points
 
 def trim_line(binary_mask: np.ndarray, refined_points: list):
     # Create a grid of x and y coordinates for mask

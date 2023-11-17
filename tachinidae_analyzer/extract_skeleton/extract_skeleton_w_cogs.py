@@ -23,6 +23,6 @@ def method2_connect_cog(ordered_cogs, random_points, combined_mask, alpha=1, ite
     refiner = ta.extract_skeleton.line_refiner.GraphRefiner(reference_points_extended, random_points, alpha=alpha, iterations=iterations)
     optimized_points = refiner.get_refined_points()
     control_points = refiner.trim_by_mask(combined_mask)
-    fitted_points = refiner.sample_points_from_segments(control_points, n=n_samples)
+    fitted_points = ta.extract_skeleton.line_refiner.sample_points_from_segments(control_points, n=n_samples)
 
     return fitted_points

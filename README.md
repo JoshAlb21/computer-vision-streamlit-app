@@ -11,7 +11,9 @@ pip install -e .
 
 ## Installing dependecies
 
-1. install cython: 
+for focus stacking
+
+1. install cython:
 brew install cython
 pip install Cython
 

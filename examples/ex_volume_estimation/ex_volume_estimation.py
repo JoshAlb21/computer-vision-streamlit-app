@@ -38,8 +38,8 @@ if __name__ == "__main__":
             img_np, img, boxes, masks, scores, all_cls, mask_w_label, labels = loader.load()
 
             bin_masks = ta.analyze_segments.xyn_to_bin_mask.xyn_to_bin_mask(masks, img.width, img.height, img_np)
-            for key, masks in mask_w_label.items():
-                mask_w_label[key] = ta.analyze_segments.xyn_to_bin_mask.xyn_to_bin_mask(masks, img.width, img.height, img_np)
+            for key, i_masks in mask_w_label.items():
+                mask_w_label[key] = ta.analyze_segments.xyn_to_bin_mask.xyn_to_bin_mask(i_masks, img.width, img.height, img_np)
                 #print("Plot binary mask", key)
                 #plot_binary_mask(mask_w_label[key][0])
 
@@ -74,7 +74,7 @@ if __name__ == "__main__":
             random_points = generator.get_points()
 
             # Use ODR instead of OLS
-            #fitted_points = generator.fit_get_odr(degree=n_polynom)
+            #fitted_points = generator.fit_get_odr(degree=n_polynom)OrthogonalLinesGenerator
 
             # Use method 2
             '''
@@ -94,11 +94,12 @@ if __name__ == "__main__":
                 print("Could not fit points with method 3 (Less than 2 CoGs). Fall back to regression...")
                 fitted_points = generator.fit_get_odr(degree=n_polynom)
             fitted_points = ta.extract_skeleton.line_refiner.trim_line(combined_mask, fitted_points)
+            fitted_points = ta.extract_skeleton.line_refiner.sample_points_from_segments(fitted_points, n=110)
 
             #***************
             # Calculate orthogonal lines
             #***************
-            num_lines = config["volume_settings"]["num_orthogonal_lines"] 
+            num_lines = config["volume_settings"]["num_orthogonal_lines"]
             generator = ta.extract_skeleton.orthogonal_slicer.OrthogonalLinesGenerator(fitted_points, combined_mask, separate_masks=mask_w_label)
             generator.generate_orthogonal_lines(num_lines=num_lines)
             # Remove intersecting lines
@@ -111,8 +112,17 @@ if __name__ == "__main__":
             # Plot skeleton with orthogonal lines
             #***************
             drawer = ta.extract_skeleton.plot_skeleton.LineDrawer(points=fitted_points, image=img_np, orthogonal_lines=lines)
+            drawer_bin = ta.extract_skeleton.plot_skeleton.LineDrawer(points=fitted_points, image=combined_mask, bin_mask=True, orthogonal_lines=None)
             if config["general"]["show_plots"]:
+                #ta.plotting.inference_results.plot_segments_w_cogs(img_np, boxes, masks, all_cls, labels, cogs=cogs, alpha=0.5)
+                
+                ta.plotting.inference_results.plot_segments(img_np, boxes, masks, all_cls, labels, conf=scores, score=False)
+                drawer.draw_line()
                 drawer.show_image()
+                drawer_bin.draw_line()
+                drawer_bin.show_image()
+                visualizer = ta.plotting.volume_visualizer.BodyVolumeVisualizer(lines)
+                visualizer.visualize()
 
             #***************
             # Compute volume
@@ -143,6 +153,7 @@ if __name__ == "__main__":
             total_row = pd.concat([volumes, lengths], axis=1)
             total_row["file_name"] = file_name
             all_rows.append(total_row)
-
-    df_volumes = pd.concat(all_rows, axis=0, ignore_index=True)
-    df_volumes.to_csv(os.path.join(config["paths"]["target_df_dir"], config["paths"]["target_df_name"]), index=False)
+    
+    if config["general"]["save_csv"]:
+        df_volumes = pd.concat(all_rows, axis=0, ignore_index=True)
+        df_volumes.to_csv(os.path.join(config["paths"]["target_df_dir"], config["paths"]["target_df_name"]), index=False)

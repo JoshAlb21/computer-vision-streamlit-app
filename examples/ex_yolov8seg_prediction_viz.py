@@ -2,7 +2,7 @@ from tachinidae_analyzer.plotting.inference_results import plot_segments_from_re
 from tachinidae_analyzer.perform_inference.inference_yolov8seg import inference_yolov8seg_on_folder
 from tachinidae_analyzer.plotting.color_distribution import plot_color_histogram
 from tachinidae_analyzer.plotting.visualize_bin_mask import visualize_bin_mask
-from tachinidae_analyzer.plotting.area_ratio_barplot import plot_grouped_ratio_barplot_with_labels
+from tachinidae_analyzer.plotting.area_ratio_barplot import plot_grouped_ratio_barplot_with_labels, plot_single_segmented_ratio_barplot
 
 from tachinidae_analyzer.analyze_segments.segment_extractors import SegmentColor, SegmentArea, segment_area_comparison
 from tachinidae_analyzer.analyze_segments.xyn_to_bin_mask import xyn_to_bin_mask
@@ -40,3 +40,5 @@ area_ratios = segment_area_comparison(segment_areas)
 area_ratios = area_ratios.iloc[0].to_dict()
 plot_grouped_ratio_barplot_with_labels(area_ratios, list(predictions[0][0].names.values()))
 print(predictions[0][0])
+
+plot_single_segmented_ratio_barplot(area_ratios, list(predictions[0][0].names.values()))

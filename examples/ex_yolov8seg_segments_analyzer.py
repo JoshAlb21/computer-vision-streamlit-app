@@ -20,7 +20,7 @@ df_segments["SpecimenCode/Filename"] = df_segments["img_id"].apply(lambda x: x.s
 # concat df_dataset and df_segments based on "SpecimenCode/Filename"
 df_merged = pd.merge(df_segments, df_dataset, on="SpecimenCode/Filename")
 # Save merged df
-df_merged.to_csv(csv_enhanced_path, index=False)
+#df_merged.to_csv(csv_enhanced_path, index=False)
 
 #*******************
 # Prepare data

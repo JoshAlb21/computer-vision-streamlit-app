@@ -7,9 +7,10 @@
         "target_df_name": "df_volumes.csv"
     },
     "general": {
-        "versions": ["ver1", "ver2"],
+        "versions": ["ver2"],
         "reduce_to": 0,
-        "show_plots": false
+        "show_plots": true,
+        "save_csv": false
     },
     "skeleton_extraction_w_cog": {
         "alpha": 1,
@@ -17,7 +18,7 @@
         "n_samples":  100
     },
     "volume_settings": {
-        "num_orthogonal_lines": 50,
+        "num_orthogonal_lines": 150,
         "k_mm_per_px": 0.003118
     }
 }

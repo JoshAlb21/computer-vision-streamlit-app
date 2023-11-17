@@ -15,8 +15,8 @@ all_json_files = os.listdir(json_path)
 all_img_files = os.listdir(image_path)
 file_names_wo_ending = [file_name.split('.')[0] for file_name in all_json_files]
 
-reduce_to = 10
-file_names_wo_ending = file_names_wo_ending[:reduce_to]
+reduce_to = 20
+file_names_wo_ending = file_names_wo_ending[10:reduce_to]
 
 for file_name in file_names_wo_ending:
     json_file_path = os.path.join(json_path, file_name + '.json')
@@ -143,8 +143,8 @@ for file_name in file_names_wo_ending:
     #***************
     # Method 3
     #***************
-    #fitted_points = generator.interpolate_points_parametric_spline(given_points=cogs_array[:1])
-    #fitted_points = ta.extract_skeleton.line_refiner.trim_line(combined_mask, fitted_points)
+    fitted_points = generator.interpolate_points_parametric_spline(given_points=cogs_array)
+    fitted_points = ta.extract_skeleton.line_refiner.trim_line(combined_mask, fitted_points)
 
     #***************
     # Plot skeleton
