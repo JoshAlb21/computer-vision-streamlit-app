@@ -10,13 +10,18 @@ from tachinidae_analyzer.analyze_segments.xyn_to_bin_mask import xyn_to_bin_mask
 from collections import defaultdict
 
 
-folder_path = "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/img/ver1/"
-model_path = "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/models/YOLOv8_seg/weights/last.pt"
+folder_path = '/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/test/ver2/'#"/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/img/ver1/"
+model_path = "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/models/YOLOv8_seg/yolov8n_seg_w_aug.pt"
 
 predictions = inference_yolov8seg_on_folder(folder_path, model_path, limit_img=1)
 bin_masks = xyn_to_bin_mask(predictions[0][0].masks.xyn, predictions[0][0].orig_img.shape[1], predictions[0][0].orig_img.shape[0], predictions[0][0].orig_img)
 
 plot_segments_from_results(predictions[0][0])
+
+# save prediction as pcikle
+import pickle
+with open('prediction.pickle', 'wb') as handle:
+    pickle.dump(predictions, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 # Histogram
 predictions = inference_yolov8seg_on_folder(folder_path, model_path, limit_img=1)

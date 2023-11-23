@@ -10,12 +10,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from tqdm import tqdm
 
-
 if __name__ == "__main__":
 
     # Load config.
     file_path = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    config_path = os.path.join(file_path, "volume_extraction_config.json")
+    config_path = os.path.join(file_path, "volume_extraction_config copy.json")
     config = ta.utils.load_config.load_config(config_path)
 
     all_rows = []
@@ -37,41 +36,26 @@ if __name__ == "__main__":
             loader = ta.utils.load_json_annotation.AnnotationLoader(file_name, json_path, image_path)
             img_np, img, boxes, masks, scores, all_cls, mask_w_label, labels = loader.load()
 
-            bin_masks = ta.analyze_segments.xyn_to_bin_mask.xyn_to_bin_mask(masks, img.width, img.height, img_np)
-            for key, i_masks in mask_w_label.items():
-                mask_w_label[key] = ta.analyze_segments.xyn_to_bin_mask.xyn_to_bin_mask(i_masks, img.width, img.height, img_np)
-                #print("Plot binary mask", key)
-                #plot_binary_mask(mask_w_label[key][0])
-
-            # Combine binary masks per segment
-            mask_w_label = ta.extract_skeleton.combine_masks.combine_masks(mask_w_label)
-
+            #***************
+            # Get binary masks
+            #***************
+            bin_masks, mask_w_label = ta.length_estimation.utils_vol_estimation.get_binary_masks(masks, img_np, img, mask_w_label)
+            
             #***************
             # Compute COGs
             #***************
-            cogs = ta.analyze_segments.calc_2d_cog_binary_mask.compute_cogs(bin_masks, all_cls, labels)
-
-            cogs_list = []
-            for cog_i in range(3):
-                try:
-                    cog_tuple = cogs[str(cog_i)]
-                    cogs_list.append(cog_tuple)
-                except:
-                    pass
-            cogs_array = np.array(cogs_list)
-
-            ordered_cogs = ta.plotting.inference_results.order_cog_dict(cogs, max_i=3)
+            cogs_array, ordered_cogs = ta.length_estimation.utils_vol_estimation.get_cogs(bin_masks, all_cls, labels)
             
             #***************
             # Compute skeleton
             #***************
             n_polynom = 2
-            weight = 20
-            cog_weights = np.array([weight]*cogs_array.shape[0])
+            #weight = 20
+            #cog_weights = np.array([weight]*cogs_array.shape[0])
             # Compute skeleton
-            generator = ta.extract_skeleton.polynom_regression_in_mask.MaskPointGenerator(bin_masks, cogs_array, cog_weights)
+            generator = ta.extract_skeleton.polynom_regression_in_mask.MaskPointGenerator(bin_masks, cogs_array)
             combined_mask = generator.get_combined_mask()
-            random_points = generator.get_points()
+            #random_points = generator.get_points()
 
             # Use ODR instead of OLS
             #fitted_points = generator.fit_get_odr(degree=n_polynom)OrthogonalLinesGenerator
@@ -87,26 +71,14 @@ if __name__ == "__main__":
                 fitted_points = generator.fit_get_odr(degree=n_polynom)
             '''
 
-            # Method 3
-            try:
-                fitted_points = generator.interpolate_points_parametric_spline(given_points=cogs_array)
-            except ValueError:
-                print("Could not fit points with method 3 (Less than 2 CoGs). Fall back to regression...")
-                fitted_points = generator.fit_get_odr(degree=n_polynom)
-            fitted_points = ta.extract_skeleton.line_refiner.trim_line(combined_mask, fitted_points)
-            fitted_points = ta.extract_skeleton.line_refiner.sample_points_from_segments(fitted_points, n=110)
+            # Method 3 (Fallback method=Regression)
+            fitted_points = ta.length_estimation.utils_vol_estimation.get_middle_line_points(generator, cogs_array, combined_mask, n_polynom=n_polynom)
 
             #***************
             # Calculate orthogonal lines
             #***************
             num_lines = config["volume_settings"]["num_orthogonal_lines"]
-            generator = ta.extract_skeleton.orthogonal_slicer.OrthogonalLinesGenerator(fitted_points, combined_mask, separate_masks=mask_w_label)
-            generator.generate_orthogonal_lines(num_lines=num_lines)
-            # Remove intersecting lines
-            # TODO takes to much time, find algorithm to speed up, e.g. bentley ottmann
-            # generator.remove_intersecting_lines()
-            # Get the remaining lines
-            lines = generator.get_orthogonal_lines()
+            lines, generator = ta.length_estimation.utils_vol_estimation.get_orth_lines(num_lines, fitted_points, combined_mask, mask_w_label)
             
             #***************
             # Plot skeleton with orthogonal lines
@@ -127,14 +99,10 @@ if __name__ == "__main__":
             #***************
             # Compute volume
             #***************
-            k_mm_per_px = config["volume_settings"]["k_mm_per_px"] 
-            h_value = generator.get_h_mean()
-            estimator = ta.length_estimation.volume_estimation.VolumeEstimator(lines, h_value, k_conv_factor=k_mm_per_px)
-            total_estimated_volume, body_part_volumes = estimator.calculate_volume_in_mm_3(round_to=3)
-            print(f"total Estimated Volume: {total_estimated_volume} mm^3")
-            print(f"body part volumes: {body_part_volumes} mm^3")
-            volumes = {"total_volume": total_estimated_volume, **body_part_volumes}
-            volumes = pd.DataFrame(volumes, index=[0])
+            k_mm_per_px = config["volume_settings"]["k_mm_per_px"]
+            volumes = ta.length_estimation.utils_vol_estimation.get_volume_from_lines(lines, generator, k_mm_per_px)
+            #print(f"total Estimated Volume: {total_estimated_volume} mm^3")
+            #print(f"body part volumes: {body_part_volumes} mm^3")
 
             #***************
             # Compute length
