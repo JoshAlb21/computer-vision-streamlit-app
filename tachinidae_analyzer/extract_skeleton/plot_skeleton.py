@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 class LineDrawer:
-    def __init__(self, points: np.ndarray, image: np.ndarray, bin_mask: bool = False, scatter_points: np.ndarray = None, orthogonal_lines: (list, dict) = None):
+    def __init__(self, points: np.ndarray, image: np.ndarray, bin_mask: bool = False, scatter_points: np.ndarray = None, orthogonal_lines: (list, dict) = None, conv_2_rgb: bool = True):
         self.points = points.astype(int)  # Convert points to integer
         self.scatter_points = scatter_points.astype(int) if scatter_points is not None else None
         self.orthogonal_lines = orthogonal_lines
@@ -12,7 +12,8 @@ class LineDrawer:
             self.image = self._prepare_binary_mask(image)
             self.line_color = (255, 0, 0)  # Blue line for BGR when bin_mask is True
         else:
-            image = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2BGR)
+            if conv_2_rgb:
+                image = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2BGR)
             self.image = image
             self.line_color = (0, 0, 255)  # Red line for BGR when bin_mask is False
         self.marker_color = (0, 255, 0)  # Green marker color
@@ -104,6 +105,12 @@ class LineDrawer:
         cv2.imshow('Image with Line', self.image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+
+    def get_img(self):
+        self.draw_line()
+        self.draw_orthogonal_lines()  # Call this method before the other drawings
+        self.draw_scatter()  # Call this method before showing the image
+        return self.image
 
     def save_image(self, path: str, name:str):
         if not name.endswith(".png") and not name.endswith(".jpg"):
