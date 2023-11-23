@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     # Load config.
     file_path = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    config_path = os.path.join(file_path, "volume_extraction_config copy.json")
+    config_path = os.path.join(file_path, "volume_extraction_config.json")
     config = ta.utils.load_config.load_config(config_path)
 
     all_rows = []
