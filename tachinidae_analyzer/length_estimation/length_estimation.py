@@ -1,7 +1,8 @@
 import numpy as np
+from typing import Optional
 
 class LengthEstimator:
-    def __init__(self, points, masks, k_conv_factor):
+    def __init__(self, points, masks, k_conv_factor: Optional[float]):
         """
         Initialize the LengthEstimator.
 
@@ -12,7 +13,7 @@ class LengthEstimator:
         """
         self.points = np.array(points)
         self.masks = masks
-        self.k_conv_factor = k_conv_factor
+        self.k_conv_factor = k_conv_factor if k_conv_factor is not None else 1
 
     def _calculate_length(self, mask):
         """

@@ -100,7 +100,7 @@ class BodyVolumeVisualizer:
                 # Add label only for the first circle to avoid repetition in the legend
                 ax.plot(x_circle, y_circle, z_circle, color=color, alpha=0.6, label=label if idx == 0 else "")
     
-    def visualize(self):
+    def visualize(self, return_fig:bool=False):
         """Visualize the circles for each body part in 3D."""
         fig = plt.figure(figsize=(12, 12))
         ax = fig.add_subplot(111, projection='3d')
@@ -126,4 +126,7 @@ class BodyVolumeVisualizer:
         ax.legend()
         ax.set_title("3D Visualization of Circles Using Midpoints of Orthogonal Lines")
 
-        plt.show()
+        if return_fig:
+            return plt.gcf()
+        else:
+            plt.show()

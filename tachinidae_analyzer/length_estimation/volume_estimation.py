@@ -35,9 +35,10 @@ estimated_volume = estimator.calculate_volume()
 """
 
 import numpy as np
+from typing import Optional
 
 class VolumeEstimator:
-    def __init__(self, orthogonal_lines_dict: dict, h: float, k_conv_factor: float):
+    def __init__(self, orthogonal_lines_dict: dict, h: float, k_conv_factor: Optional[float]):
         """
         Initialize the VolumeEstimator.
 
@@ -50,7 +51,7 @@ class VolumeEstimator:
         """
         self.orthogonal_lines_dict = orthogonal_lines_dict
         self.h = h
-        self.k_conv_factor = k_conv_factor
+        self.k_conv_factor = k_conv_factor if k_conv_factor is not None else 1
 
     def _calculate_area(self, line:list):
         """
