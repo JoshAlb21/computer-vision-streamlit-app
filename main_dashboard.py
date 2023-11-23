@@ -8,10 +8,20 @@ import json
 from ultralytics import YOLO
 import mpld3
 import streamlit.components.v1 as components
+import subprocess
+import sys
+import time
+
+try:
+    import tachinidae_analyzer as ta
+except ModuleNotFoundError as e:
+    #install local package
+    subprocess.Popen([f'{sys.executable} -m pip install -e .'], shell=True)
+    # wait for subprocess to install package before running your actual code below
+    time.sleep(90)
 
 st.set_page_config(layout="wide", page_title="Insect classifier/instance segmentation")
 
-import tachinidae_analyzer as ta
 from tachinidae_analyzer.plotting.inference_results import plot_segments_from_results
 
 
