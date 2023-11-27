@@ -5,7 +5,7 @@
 *.tif
 **/.DS_Store
 
-data/img/ver2
+data
 
 
 # Byte-compiled / optimized / DLL files
