@@ -60,9 +60,21 @@ pip install -e .
 
 python -m tachinidae_analyzer.perform_inference.inference_yolov8seg
 
+### Create new version of standalone app
+1. create package.json file
+2. npm install
+3. npm run dump tachinidae_analyzer
+4. npm run dist
+
 ### Examples
 
 1. run ex_yolov8seg_prediction_extraction -> result: df_segments.csv
 2. run ex_yolov8seg_segments_analyzer -> df_segments_dataset.csv (df_segments.csv + TachinidaeID_export... .csv)
 3. run ex_volume_estimation -> result: df_volumes.csv
 4. run analyze_extracted_volumes -> result: df_merged.csv
+
+### Run docker container
+docker build -t streamlit .
+docker run -p 8501:8501 streamlit
+docker container ls --all
+docker export 68b0fa2d9905 > streamlit.tar
