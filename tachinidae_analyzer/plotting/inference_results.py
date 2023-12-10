@@ -35,7 +35,12 @@ def color_generator():
     return itertools.cycle(base_colors)
 
 def plot_segments(image, boxes, masks, cls:torch.tensor, labels:dict, conf:Union[torch.tensor, np.ndarray], score:bool=False, alpha=0.5, return_image:bool=False):
-    colors = color_generator()
+    #colors = color_generator()
+    color_lookup = {'head': (0, 255, 0), #green
+                    'thorax': (0, 0, 255), #blue
+                    'abdomen': (255, 0, 0)} #red
+    
+    predefined_colors = [(0, 255, 0), (0, 0, 255), (255, 0, 0)]
     cls = cls.numpy()
     h, w = image.shape[:2]
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -46,7 +51,8 @@ def plot_segments(image, boxes, masks, cls:torch.tensor, labels:dict, conf:Union
         else:
             label = labels.get(cls[i], "Unknown")
 
-        color = next(colors)
+        #color = next(colors)
+        color = color_lookup[labels.get(cls[i])]
         
         # Draw bounding box
         box_label(image, box, label, color)

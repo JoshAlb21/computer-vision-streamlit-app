@@ -19,7 +19,7 @@ class LineDrawer:
         self.marker_color = (0, 255, 0)  # Green marker color
         self.scatter_color = (255, 0, 0)  # Blue color for scatter points
         if isinstance(self.orthogonal_lines, dict):
-            predefined_colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0)]  # Red, Green, Blue in BGR format
+            predefined_colors = [(0, 255, 0), (0, 0, 255), (255, 0, 0)]  # Green, Blue, Red in BGR format 
             self.segment_colors = {seg: predefined_colors[i % len(predefined_colors)] for i, seg in enumerate(orthogonal_lines)}
         else:
             self.ortho_line_color = (255, 255, 0)  # Default yellow color for orthogonal lines if it's a list

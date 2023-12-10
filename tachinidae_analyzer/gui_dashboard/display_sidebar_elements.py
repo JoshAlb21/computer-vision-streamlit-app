@@ -22,7 +22,7 @@ def disp_model_settings():
         models_path_seg = st.text_input(
             "Enter the folder that contains your segmentation models",
             placeholder=".pt or .pth file",
-            value = "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/models/YOLOv8_seg/"
+            value = "data/models/YOLOv8_seg/"
         )
         
         #model_type_1 = st.radio("Choose model type",
@@ -45,7 +45,7 @@ def disp_model_settings():
         models_path_cls = st.text_input(
             "Enter the folder that contains your classification models",
             placeholder=".pt or .pth file",
-            value = "/Users/joshuaalbiez/Documents/python/tachinidae_analyzer/data/models/YOLOv8_cls/"
+            value = "data/models/YOLOv8_cls/"
         )
         if models_path_cls:
             path_selected_model_cls = ta.gui_dashboard.button_model_selection.model_selector(models_path_cls)

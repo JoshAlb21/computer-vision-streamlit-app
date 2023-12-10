@@ -12,21 +12,57 @@ Tachinidae Analyzer is a Streamlit-based web application designed for classifyin
 
 ## Getting Started (GUI)
 
+Note: The app runs locally on your computer after installation. This means that all data or images that you want to use for your analysis, including the results, are only stored locally and are not uploaded to a cloud (the "Upload" button is therefore somewhat misleading, as it only means uploading to the local application).
+
+If you are interested in using a hosted version of the app, just contact me at the following email address: uvtoc@student.kit.edu. Even a self-hosted app internally in your organisation's network is easily possible due to Docker containers.
+
 ### Installation
 To install Tachinidae Analyzer, follow these steps:
 
 1. Clone the repository:
    ```
-   git clone [repository URL]
+   git clone https://github.com/JoshAlb21/tachinidae_analyzer
    ```
-2. Install required dependencies:
+   OR
+   simply download the repo as zip file (unzip after download)
+
+2. Download Docker for your OS: [Docker](https://www.docker.com/get-started/) (makes sure that every user runs the same environment and requirements like python etc. are properly installed despite using a different OS.)
+   
+3. Setup required tools (by using a shell(.sh) script for MacOS or Linux and bash(.bat) script for Windows):
+   
+   MacOS and Linux:
+   a. make the scripts executable
    ```
-   pip install -r requirements.txt
+   chmod +x install_app.sh
    ```
-3. Run the Streamlit application:
+   and 
    ```
-   streamlit run main_dashboard.py
+   chmod +x start_app.sh
    ```
+
+   b. Finally you can install the app (will also open it for the first time after installation)
+   ```
+   ./run_streamlit_app.sh
+   ```
+
+   Windows:
+   Install the app (opens it at the first time) by
+   Double Clicking the install_app.bat file
+
+### Start the app (after succesfull installation)
+The application is ready to use as soon as it is succesfully installed.
+
+MacOS/Linux:
+open a terminal inside the downloaded folder and type
+```
+   ./start_app.sh
+```
+
+Windows:
+Double-Click on file
+```
+   start_app.bat
+```
 
 ### Overview
 The sidebar is used to adjust different settings. Here you can choose the image(s) you want to perform inference on. Given the path where you store your models (pt or pth files), you will be able to select the model you want to use.
@@ -41,6 +77,10 @@ After starting the application, follow these steps:
 2. Select the model for classification and segmentation.
 3. View the segmentation results and analysis in the main dashboard.
 4. Download the results and segmented images as needed.
+
+### Install updates
+until now there is no option to install updates withouth re-installing the whole app. Make sure there is a new version of the app by checking the announcement on the github repo.
+Then follow the steps described in section "Getting Started (GUI)" / "Installation".
 
 ## Getting Started (with programming knowledge)
 
