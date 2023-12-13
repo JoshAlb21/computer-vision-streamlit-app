@@ -122,6 +122,8 @@ if __name__ == '__main__':
     # Run segmentation
     #***************
     if imgs_upload is not None and path_selected_model_seg is not None:
+
+        df_name = pd.DataFrame([img.name.split('.')[0] for img in imgs_upload], columns=['file_name'])
         
         # Not required for offline app
         #upload_size = sum([img.size for img in imgs_upload])
@@ -188,7 +190,7 @@ if __name__ == '__main__':
     elif seg_task_done and cls_task_done: # Segmentation and classification
         # Combine csv files before downloading
         assert df_vol_res.shape[0] == df_cls.shape[0], "Number of rows in df_vol_res and df_cls must be equal"
-        df_combined = pd.concat([df_vol_res, df_cls], axis=1)
+        df_combined = pd.concat([df_vol_res, df_cls, df_name], axis=1)
         valid_case = True
 
     if valid_case:
@@ -204,5 +206,17 @@ if __name__ == '__main__':
 
     st.write("### Insights&Analysis multiple images")
     st.markdown("""---""")
+    ia_multi_col1, ia_multi_col2 = st.columns(2)
+    ia_multi_col1.write("#### Volume estimation")
+    ia_multi_col2.write("#### Length estimation")
+
+    cols_len = ["length_head", "length_thorax", "length_abdomen"]
+    cols_vol = ["volume_head", "volume_thorax", "volume_abdomen"]
+
+    vol_plot, len_plot = ta.plotting.pairwise_vol_len.plot_pairwise_vol_len(df_combined, cols_vol=cols_vol, cols_len=cols_len, hue="class")
+
+    ia_multi_col1.pyplot(vol_plot)
+    ia_multi_col2.pyplot(len_plot)
+
 
 

@@ -26,9 +26,15 @@ def all_vol_est_main(imgs_upload, predictions, k_mm_per_px, n_polynom_fallback, 
         # Compute COGs
         #***************
         cogs_array, ordered_cogs = ta.length_estimation.utils_vol_estimation.get_cogs(bin_masks, all_cls, labels)
-        cog_dict = {'x_head': cogs_array[0][0], 'y_head': cogs_array[0][1],
-                    'x_thorax': cogs_array[1][0], 'y_thorax': cogs_array[1][1],
-                    'x_abdomen': cogs_array[2][0], 'y_abdomen': cogs_array[2][1]}
+
+        present_label_names = [labels[i_cls.item()] for i_cls in all_cls]
+        present_label_names = list(dict.fromkeys(present_label_names)) # Remove duplicates (in case a label is present multiple times)
+
+        cog_dict = {}
+        for idx, present_label in enumerate(present_label_names):
+            cog_dict[f'x_{present_label}'] = cogs_array[idx][0]
+            cog_dict[f'y_{present_label}'] = cogs_array[idx][1]
+
         df_cogs = pd.DataFrame(cog_dict, index=[0])
 
         #***************
@@ -36,9 +42,6 @@ def all_vol_est_main(imgs_upload, predictions, k_mm_per_px, n_polynom_fallback, 
         #***************
         generator = ta.extract_skeleton.polynom_regression_in_mask.MaskPointGenerator(bin_masks, cogs_array)
         combined_mask = generator.get_combined_mask()
-
-        st.write("cogs_array", cogs_array)
-        st.write("ordered_cogs", ordered_cogs)
 
         fitted_points = ta.length_estimation.utils_vol_estimation.get_middle_line_points(generator, cogs_array, combined_mask, n_polynom=n_polynom_fallback)
 
@@ -52,15 +55,24 @@ def all_vol_est_main(imgs_upload, predictions, k_mm_per_px, n_polynom_fallback, 
         #***************
         volumes = ta.length_estimation.utils_vol_estimation.get_volume_from_lines(lines, generator, k_mm_per_px)
 
-        # Combine to df_cogs and volumes        
-        df_res_row = pd.concat([df_cogs, volumes], axis=1)
-        all_rows.append(df_res_row)
-
         if first:
             first_res['lines'] = lines
             first_res['fitted_points'] = fitted_points
             first_res['img_np'] = img_np
             first = False
+
+        #***************
+        # Compute length
+        #***************
+        estimator = ta.length_estimation.length_estimation.LengthEstimator(fitted_points, mask_w_label, k_mm_per_px)
+        length_per_segment = estimator.calculate_lengths(round_to=3)
+        total_length = estimator.calculate_total_length(round_to=3)
+        lengths = {"total_length": total_length, **length_per_segment}
+        lengths = pd.DataFrame(lengths, index=[0])
+
+        # Combine to df_cogs and volumes
+        df_res_row = pd.concat([df_cogs, volumes, lengths], axis=1)
+        all_rows.append(df_res_row)
 
     df_vol_res = pd.concat(all_rows, axis=0, ignore_index=True)
 

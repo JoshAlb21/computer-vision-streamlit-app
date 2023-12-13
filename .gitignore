@@ -1,6 +1,6 @@
 # Custom
 #*.jpg
-*.png
+#*.png
 *.tiff
 *.tif
 **/.DS_Store

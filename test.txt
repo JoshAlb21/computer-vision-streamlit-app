@@ -1,4 +1,0 @@
-nativefier --name tachinid_analyzer.app https://tachinidae-analyzer.streamlit.app --platform mac
-nativefier --name tachinid_analyzer.exe https://tachinidae-analyzer.streamlit.app --platform windows
-
-mac, linux
