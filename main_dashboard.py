@@ -182,10 +182,10 @@ if __name__ == '__main__':
     if not seg_task_done and not cls_task_done: # No segmentation and no classification
         df_combined = None
     elif seg_task_done and not cls_task_done: # Only segmentation
-        df_combined = df_vol_res
+        df_combined = pd.concat([df_vol_res, df_name], axis=1)
         valid_case = True
     elif not seg_task_done and cls_task_done: # Only classification
-        df_combined = df_cls
+        df_combined = pd.concat([df_cls, df_name], axis=1)
         valid_case = True
     elif seg_task_done and cls_task_done: # Segmentation and classification
         # Combine csv files before downloading
@@ -204,19 +204,24 @@ if __name__ == '__main__':
         }
         ta.gui_dashboard.button_download.button_download_all(all_data=all_data)
 
-    st.write("### Insights&Analysis multiple images")
-    st.markdown("""---""")
-    ia_multi_col1, ia_multi_col2 = st.columns(2)
-    ia_multi_col1.write("#### Volume estimation")
-    ia_multi_col2.write("#### Length estimation")
 
-    cols_len = ["length_head", "length_thorax", "length_abdomen"]
-    cols_vol = ["volume_head", "volume_thorax", "volume_abdomen"]
+    #***************
+    # Show Insights&Analysis multiple images
+    #***************
+    if imgs_upload is not None and path_selected_model_seg is not None and df_combined is not None:
+        st.write("### Insights&Analysis multiple images")
+        st.markdown("""---""")
+        ia_multi_col1, ia_multi_col2 = st.columns(2)
+        ia_multi_col1.write("#### Volume estimation")
+        ia_multi_col2.write("#### Length estimation")
 
-    vol_plot, len_plot = ta.plotting.pairwise_vol_len.plot_pairwise_vol_len(df_combined, cols_vol=cols_vol, cols_len=cols_len, hue="class")
+        cols_len = ["length_head", "length_thorax", "length_abdomen"]
+        cols_vol = ["volume_head", "volume_thorax", "volume_abdomen"]
 
-    ia_multi_col1.pyplot(vol_plot)
-    ia_multi_col2.pyplot(len_plot)
+        vol_plot, len_plot = ta.plotting.pairwise_vol_len.plot_pairwise_vol_len(df_combined, cols_vol=cols_vol, cols_len=cols_len, hue="class")
+
+        ia_multi_col1.pyplot(vol_plot)
+        ia_multi_col2.pyplot(len_plot)
 
 
 

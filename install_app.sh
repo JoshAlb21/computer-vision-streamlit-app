@@ -34,5 +34,5 @@ open_streamlit_app() {
 check_docker
 build_docker_image
 run_docker_container &
-sleep 10 # Wait for the server to start
+sleep 2 # Wait for the server to start
 open_streamlit_app

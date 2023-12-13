@@ -62,7 +62,7 @@ by using a shell(.sh) script for MacOS or Linux and bash(.bat) script for Window
 
     - b. Finally you can install the app (will also open the app for the first time after installation)
     ```bash
-    ./run_streamlit_app.sh
+    ./install_app.sh
     ```
 
 - Windows:
