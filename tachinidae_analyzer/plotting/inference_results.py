@@ -5,6 +5,7 @@ from typing import Union, List, Dict, Optional, Tuple
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 
 def box_label(image, box, label='', color=(128, 128, 128), txt_color=(255, 255, 255)):
@@ -12,6 +13,7 @@ def box_label(image, box, label='', color=(128, 128, 128), txt_color=(255, 255, 
     lw = max(round(sum(image.shape) / font_scale_inverse * 0.003), 2)
     p1, p2 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))
     cv2.rectangle(image, p1, p2, color, thickness=lw, lineType=cv2.LINE_AA)
+    print("Label in box_label:", label)
     if label:
         tf = max(lw - 1, 1)  # font thickness
         w, h = cv2.getTextSize(label, cv2.FONT_HERSHEY_TRIPLEX, fontScale=lw / 3, thickness=tf)[0]  # text width, height
@@ -34,6 +36,41 @@ def color_generator():
     base_colors = [(255, 0, 0), (0, 0, 255), (0, 255, 0), (0, 255, 255), (255, 165, 0), (128, 0, 128), (165, 42, 42), (255, 192, 203)]
     return itertools.cycle(base_colors)
 
+def plot_mask(image, masks, single_mask_index=None, single_mask_array:np.ndarray=None):
+    """
+    Plot masks on the image.
+
+    :param image: Original image as a numpy array.
+    :param masks: List of masks, each mask is an array of normalized [x, y] points.
+    :param single_mask_index: Index of the single mask to be plotted (optional).
+    """
+    # Create a figure and axis
+    fig, ax = plt.subplots(1)
+    # Display the image
+    ax.imshow(image)
+
+    img_height, img_width = image.shape[:2]
+
+    if single_mask_index is not None:
+        # Plot only the specified mask
+        mask = masks[single_mask_index]
+        pixel_coords = mask * np.array([img_width, img_height])
+        polygon = patches.Polygon(pixel_coords, linewidth=1, edgecolor='r', facecolor='none')
+        ax.add_patch(polygon)
+    else:
+        # Plot all masks
+        if single_mask_array is not None:
+            pixel_coords = single_mask_array * np.array([img_width, img_height])
+            polygon = patches.Polygon(pixel_coords, linewidth=1, edgecolor='r', facecolor='none')
+            ax.add_patch(polygon)
+        else:
+            for mask in masks:
+                pixel_coords = mask * np.array([img_width, img_height])
+                polygon = patches.Polygon(pixel_coords, linewidth=1, edgecolor='r', facecolor='none')
+                ax.add_patch(polygon)
+
+    plt.show()
+
 def plot_segments(image, boxes, masks, cls:torch.tensor, labels:dict, conf:Union[torch.tensor, np.ndarray], score:bool=False, alpha=0.5, return_image:bool=False):
     #colors = color_generator()
     color_lookup = {'head': (0, 255, 0), #green
@@ -41,26 +78,48 @@ def plot_segments(image, boxes, masks, cls:torch.tensor, labels:dict, conf:Union
                     'abdomen': (255, 0, 0)} #red
     
     predefined_colors = [(0, 255, 0), (0, 0, 255), (255, 0, 0)]
-    cls = cls.numpy()
+    #cls = cls.numpy()
     h, w = image.shape[:2]
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    for i, (box, mask_points_normalized) in enumerate(zip(boxes, masks)):
+    print("CLS", cls)
+    print("LABELS", labels)
+
+    # Note for my future me:
+    #i is used to index boxes and masks, as they are ordered in the same sequence as the detections.
+    #cls[i].item() is used to get the class ID for each detection, which is then used to fetch the correct label name and color.
+
+    #for i, (box, mask_points_normalized) in enumerate(zip(boxes, masks)):
+    # What was the error: we should not use the enumeration to select the boxes and masks, we should select the cls item!!!!!!!!
+    #for i in range(len(boxes)):
+    for i, class_id in enumerate(cls):
+        #NEW- fix error
+        #label_name = labels[cls[i].item()]
+        label_name = labels[class_id.item()]
+        print("Label_name", label_name)
+        print("CLS i", class_id)
         if score:
-            label = labels[cls[i]] + " " + str(round(100 * float(conf[i]), 1)) + "%"
+            # THIS LINE IS FALSE!!
+            #label = labels[cls[i]] + " " + str(round(100 * float(conf[i]), 1)) + "%"
+            label = label_name + " " + str(round(100 * float(conf[i]), 1)) + "%"
         else:
-            label = labels.get(cls[i], "Unknown")
+            label = label_name
 
         #color = next(colors)
-        color = color_lookup[labels.get(cls[i])]
+        #color = color_lookup[labels.get(cls[i].item())]
+        color = color_lookup[label_name]
         
         # Draw bounding box
-        box_label(image, box, label, color)
+        #box_label(image, boxes[int(cls[i].item())], label, color)
+        box_label(image, boxes[i], label, color)
 
         # Denormalize mask points
-        mask_points = mask_points_normalized.copy()
+        #mask_points = masks[int(cls[i].item())].copy()
+        mask_points = masks[i].copy()
         mask_points[:, 0] *= w
         mask_points[:, 1] *= h
+
+        plot_mask(image, None, None, mask_points)
 
         # Convert denormalized mask points to a binary mask
         mask = np.zeros(image.shape[:2], dtype=np.uint8)
