@@ -67,6 +67,10 @@ class BodyVolumeVisualizer:
         """
         self.lines = lines
         self.theta = np.linspace(0, 2 * np.pi, 201)
+
+        self.color_lookup = {'head': 'green', #green
+                    'thorax': 'blue', #blue
+                    'abdomen': 'red'} #red
     
     @staticmethod
     def calculate_distance(point1, point2):
@@ -98,7 +102,7 @@ class BodyVolumeVisualizer:
                 z_circle -= mid_point[1]
                 
                 # Add label only for the first circle to avoid repetition in the legend
-                ax.plot(x_circle, y_circle, z_circle, color=color, alpha=0.6, label=label if idx == 0 else "")
+                ax.plot(x_circle, y_circle, z_circle, color=self.color_lookup[label], alpha=0.6, label=label if idx == 0 else "")
     
     def visualize(self, return_fig:bool=False):
         """Visualize the circles for each body part in 3D."""
