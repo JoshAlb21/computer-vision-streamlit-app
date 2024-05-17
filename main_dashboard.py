@@ -169,13 +169,8 @@ if __name__ == '__main__':
             # Annotations json files for all predictions
             zip_buffer_annotations = ta.gui_dashboard.process_zip_annotations.zip_all_annotations(predictions=predictions, img_names=img_names)
 
-            # Volume estimation
-            df_vol_res, first_res = ta.gui_dashboard.process_vol_est_main.all_vol_est_main(imgs_upload, predictions, k_mm_per_px, n_polynom_fallback, num_orthogonal_lines)
-            
-            #df_vol_res_w_unit = add_units_to_df_vol_result(df_vol_res) Not working
-            #ia_col1.table(df_vol_res_w_unit)
-
-            vol_est_csv = convert_to_csv(df_vol_res)
+            # Volume estimation, Not supported here - check out my other repository for the full code
+            df_vol_res = None
 
             #***************
             # Plot skeleton with orthogonal lines
